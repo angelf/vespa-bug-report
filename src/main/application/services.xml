@@ -8,7 +8,7 @@
     <nodes>
       <node hostalias='node1'></node>
     </nodes>
-    <!-- <document type='news' class="com.example.documents.News" bundle="example-app" /> -->
+    <document type='news' class="com.example.documents.News" bundle="example-app" />
   </container>
 
   <content id='mind' version='1.0'>
