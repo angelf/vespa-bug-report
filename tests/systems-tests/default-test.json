@@ -1,0 +1,36 @@
+{
+    "name": "my test",
+    "defaults": {
+      "cluster": "default",
+      "parameters": {
+        "timeout": "2"
+      }
+    },
+    "steps": [
+      {
+        "name": "feed a sample document",
+        "request": {
+          "method": "POST",
+          "body": "data/doc.json",
+          "uri": "/document/v1/test/news/docid/stack?timeout=8s"
+        }
+      },
+      {
+        "name": "query by title",
+        "request": {
+          "parameters": {
+            "yql": "select * from news where title contains 'foo'"
+          }
+        },
+        "response": {
+          "body": {
+            "root": {
+              "fields": {
+                "totalCount": 1
+              }
+            }
+          }
+        }
+      }
+    ]
+}

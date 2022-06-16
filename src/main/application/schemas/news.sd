@@ -1,0 +1,5 @@
+schema news {
+    document news {
+        field title type array<string> { indexing: index }
+    }
+}

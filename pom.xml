@@ -1,0 +1,104 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.example</groupId>
+    <artifactId>example-app</artifactId>
+    <version>1.0.0</version>
+    <packaging>container-plugin</packaging>    <!-- Use Vespa packaging -->
+    <parent>
+        <groupId>com.yahoo.vespa</groupId>
+        <artifactId>cloud-tenant-base</artifactId>
+        <version>[7,999)</version>        <!-- Use the latest Vespa release on each build -->
+        <relativePath/>
+    </parent>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <test.hide>true</test.hide>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.13</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>4.4.15</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <!-- Installs the code generator for concrete document classes, see https://docs.vespa.ai/en/concrete-documents.html -->
+            <plugin>
+                <groupId>com.yahoo.vespa</groupId>
+                <artifactId>vespa-documentgen-plugin</artifactId>
+                <!-- Find latest version at search.maven.org/search?q=g:com.yahoo.vespa%20a:vespa-documentgen-plugin -->
+                <version>7.594.36</version>
+                <configuration>
+                    <schemasDirectory>./src/main/application/schemas/</schemasDirectory>
+                    <packageName>com.example.documents</packageName>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>document-gen</id>
+                        <goals>
+                            <goal>document-gen</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Turns out that vespa codegen generates code that raises warnings, which in turn make the project fail
+            (-wError is implicitly set?). This is solved by injeciting a @SuppressWarnings at the begining of each generated
+            class
+            -->
+            <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>maven-replacer-plugin</artifactId>
+                <version>1.3.2</version>
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <includes>
+                        <include>target/generated-sources/vespa-documentgen-plugin</include>
+                    </includes>
+
+                    <regex>true</regex>
+                    <regexFlags>
+                        <regexFlag>MULTILINE</regexFlag>
+                    </regexFlags>
+
+                    <replacements>
+                        <replacement>
+                            <token>^(@SuppressWarnings\(.*?\)\s+)?public class</token>
+                            <value>@SuppressWarnings("all") public class</value>
+                        </replacement>
+                    </replacements>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.10.1</version>
+                <configuration>
+                    <compilerArgs>
+                        <arg>-verbose</arg>
+                        <arg>-Xlint:all,-options,-path</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+</project>
